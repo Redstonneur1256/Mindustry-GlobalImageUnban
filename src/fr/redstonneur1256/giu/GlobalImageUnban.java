@@ -131,6 +131,7 @@ public class GlobalImageUnban extends Mod {
             output.append(group.color).append('\n');
             instructions++;
 
+            group.lines.shuffle();
             for(String line : group.lines) {
                 output.append(line).append('\n');
                 flushed = false;
