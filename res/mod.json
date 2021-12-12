@@ -1,0 +1,9 @@
+{
+  "name": "global-image-unban",
+  "displayName": "GlobalImageUnban",
+  "description": "Tired of getting banned from server when building your logic ? This mod allows you to bypass GlobalImageBan",
+  "version": "1.0",
+  "minGameVersion": 126,
+  "hidden": true,
+  "main": "fr.redstonneur1256.giu.GlobalImageUnban"
+}

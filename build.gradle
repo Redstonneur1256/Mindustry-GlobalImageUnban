@@ -1,0 +1,66 @@
+plugins {
+    id 'java-library'
+}
+
+group 'fr.redstonneur1256'
+version '1.0'
+
+ext {
+    androidSDK = System.getenv('ANDROID_HOME') ?: System.getenv('ANDROID_SDK_ROOT')  // ?: 'Manually defined path'
+}
+
+sourceSets {
+    main.java.srcDirs = ['src/']
+    main.resources.srcDirs = ['res/']
+    test.java.srcDirs = []
+    test.resources.srcDirs = []
+}
+
+tasks.withType(JavaCompile) {
+    options.encoding = 'UTF-8'
+    sourceCompatibility = JavaVersion.VERSION_1_8
+    targetCompatibility = JavaVersion.VERSION_1_8
+}
+
+repositories {
+    mavenCentral()
+    maven { url 'https://jitpack.io' }
+}
+
+dependencies {
+    compileOnly('com.github.Anuken:Mindustry:v126')
+}
+
+if (androidSDK != null) {
+    task buildDex(type: Jar) {
+        dependsOn(tasks.jar)
+        archiveName("GlobalImageUnban-dexed.jar")
+
+        File dexFile = new File(tasks.buildDex.temporaryDir, 'dex.jar')
+        File jarFile = tasks.jar.archiveFile.get().asFile
+
+        doFirst {
+            exec {
+                workingDir(tasks.buildDex.temporaryDir)
+
+                File version = new File(androidSDK, 'build-tools').listFiles().last()
+                File d8path = new File(version, 'd8.bat')
+
+                File platforms = new File(androidSDK, 'platforms')
+                File androidJar = platforms.listFiles().reverse().find { it.isDirectory() && new File(it, 'android.jar').exists() }
+                List<File> files = configurations.compileClasspath.asList() + configurations.runtimeClasspath.asList() + [androidJar]
+
+                List<String> command = [
+                    d8path,
+                    '--min-api', '14',
+                    *files.collect { ['--classpath', it.path] }.flatten(),
+                    '--output', dexFile, jarFile
+                ]
+
+                commandLine('cmd', '/C', *command)
+            }
+        }
+
+        from(zipTree(jarFile), zipTree(dexFile))
+    }
+}
